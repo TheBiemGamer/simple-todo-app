@@ -6,15 +6,16 @@ Noah Bozkurt 2024 - Todo List App
 """
 
 import os
+import threading
 
 program_path = os.path.dirname(os.path.realpath(__file__))
-
 
 class TodoList:
     def __init__(self, task_file_name: str = "todos.txt"):
         self.todos_file_name = task_file_name
         self.todos_file = os.path.join(program_path, self.todos_file_name)
         self.tasks = []
+        self.lock = threading.Lock()
         self.__get_tasks()
 
     def __get_tasks(self) -> None:
@@ -23,14 +24,15 @@ class TodoList:
             with open(self.todos_file, "r") as file:
                 file_tasks = file.readlines()
                 for task in file_tasks:
-                    self.add_task(name=task.strip())  # Automatically capitalize task names
+                    self.add_task(name=task.strip())
         else:
             return []
 
     def __write_tasks(self) -> None:
         """Write tasks to the file."""
-        with open(self.todos_file, "w") as file:
-            file.writelines("\n".join([task.name.lower() for task in self.tasks]))
+        with self.lock:
+            with open(self.todos_file, "w") as file:
+                file.writelines("\n".join([task.name.lower() for task in self.tasks]))
 
     def add_task(self, name: str) -> str:
         """Add a task to the list and save to file."""
@@ -54,7 +56,7 @@ class TodoList:
             self.__write_tasks()
             return True
         return False
-    
+
     def edit_task(self, index: int, value: str) -> bool:
         """Edit an existing task."""
         value = value.strip().capitalize()
@@ -63,13 +65,14 @@ class TodoList:
             self.__write_tasks()
             return True
         return False
-    
+
     def print_tasks(self) -> None:
         """Print all tasks."""
         for number, task in enumerate(self.tasks):
             print(f"Task {number + 1}: {task.name}")
 
     def get_tasks(self) -> list:
+        """Return all tasks."""
         task_list = []
         for task in self.tasks:
             task_list.append(task.name)
