@@ -25,7 +25,7 @@ for index, task in enumerate(todolist.get_tasks()):
     if checkbox:
         todolist.remove_task(index=index)
         del st.session_state[task]
-        st.experimental_rerun()
+        st.rerun()
 
 st.text_input(
     label="Task", 
